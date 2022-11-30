@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Componentes con estados</title>
+</head>
+
+<body>
+  <h1>Componentes con estados</h1>
+  <form id="todo-form">
+    <input type="text" id="todo-item" placeholder="Tarea por hacer">
+    <input type="submit" value="agregar">
+  </form>
+  <h2>Lista de tareas</h2>
+  <ul id="todo-list"></ul>
+
+  <script>
+
+    //state global
+    const state = {
+      todoList: [],
+      name: ""
+    }
+
+    //template
+    const template = () => {
+      if (template.data.todoList.length < 1) return `<p><em>Lista sin tareas por hacer</em></p>`
+
+      let todos = template.data.todoList.map(el => `<li>${el}</li>`).join("")
+
+      return todos;
+    }
+
+    //agregar estado al template que genera el componente de ui (state local)
+    //estado local 
+    template.data = {
+      todoList: []
+    }
+
+    //render de ui
+    const render = () => {
+      console.log("estado global", state)
+      console.log("estado local", template.data)
+
+      $list = document.getElementById("todo-list")
+      if (!$list) return
+      //aca podemos usar la tecnica de los template, insertadyacente,innerhtml, etc
+
+      $list.innerHTML = template()
+    }
+
+    //actualizar el estado de forma reactiva
+    const setState = (obj) => {
+      for (let key in obj) {
+        if (template.data.hasOwnProperty(key)) {
+          template.data[key] = obj[key]
+        }
+      }
+      render()
+    }
+
+    //obtenemos una copia inmutable del state
+    //al convertirlo en una cadena de texto lo desvinculamos de objeto original y 
+    //con el parce creamos un objeto nuevo con una nueva posicion de memoria
+    const getState = () => JSON.parse(JSON.stringify(template.data))
+
+    document.addEventListener("DOMContentLoaded", render)
+
+    //estableciendo valores por defecto al state
+    setState({
+      todoList: ["tarea1", "tarea2"]
+    })
+
+    document.addEventListener("submit", e => {
+      if (!e.target.matches("#todo-form")) return false
+      // primero prevenimos la accion por defecto del formulario, que seria procesarse, porque el formulario lo vamos a procesar con js
+      e.preventDefault();
+
+      $item = document.getElementById("todo-item");
+      if (!$item) return
+
+      // actualizar el State de forma reactiva
+      const lastState = getState()
+      lastState.todoList.push($item.value)
+      setState({ todoList: lastState.todoList })
+      //limpiar el input.
+      $item.value = ""
+      //regresamos el foco de la pagina al input
+      $item.focus()
+    })
+  </script>
+</body>
+
+</html>
